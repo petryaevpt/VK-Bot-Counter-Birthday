@@ -116,6 +116,7 @@ function insertOrUpdate($mysqli, $user_id, $message)
     }
 }
 
+//Проверка введённой пользователем даты и приведение её к необходимому для БД формату 
 function conversionDate($message)
 {
   if (strlen($message) != 10)
@@ -126,6 +127,12 @@ function conversionDate($message)
   $day = mb_substr($message, 0, 2, 'utf-8');
   $month = mb_substr($message, 3, 2, 'utf-8');
   $year = mb_substr($message, 6, 4, 'utf-8');
+  $checkdate = $year . $month . $day;
+
+  if(!ctype_digit($checkdate))
+  {
+    return 0;
+  }
 
   if (($day == 29) && ($month == 02))
   {

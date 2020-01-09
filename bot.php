@@ -4,9 +4,6 @@ error_reporting(E_ALL);
 
 /*
 Ссылка на группу во ВК, в которой можно проверить бота: https://vk.com/public188328735
-
-TODO: Необходимо подключить cron, чтобы бот сам уведомлял пользователя о повышении прогресса (процента).
-
 */
 
 require_once 'config.php';
@@ -28,6 +25,7 @@ switch ($data['type'])
 
   case 'message_new':
   $message = $data['object']['text'];
+  $message = mb_strtolower($message);
   $peer_id = $data['object']['peer_id'] ?: $data['object']['user_id'];
 
   $user_info = users_get($access_token, $peer_id)[0];
@@ -39,11 +37,14 @@ switch ($data['type'])
   {
     messages_send($group_token, $peer_id,
     "Хорошо, понял. Теперь ты сможешь узнать процент.");
+
     insertOrUpdate($mysqli, $peer_id, $validate_message);
-  } elseif ($message == 'Процент')
+
+  } elseif ($message == 'процент')
     {
       $percent = getPercent($mysqli, $peer_id);
       messages_send($group_token, $peer_id, "{$percent}");
+      
     } else
       {
          messages_send($group_token, $peer_id,
@@ -57,3 +58,5 @@ switch ($data['type'])
     echo('ok');
   break;
 }
+
+$mysqli->close();
