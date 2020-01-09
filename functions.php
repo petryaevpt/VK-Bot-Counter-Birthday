@@ -75,7 +75,7 @@ function getPercent($mysqli, $user_id)
     }
   } else
     {
-      return 'Сначала напиши дату в формате ГГГГ-ММ-ДД.';
+      return 'Сначала напиши дату в формате ДД.ММ.ГГГГ.';
     }
 }
 
