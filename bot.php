@@ -3,7 +3,7 @@ ini_set("display_errors",1);
 error_reporting(E_ALL);
 
 /*
-Ссылка на группу во ВК, в которой можно проверить бота: https://vk.com/public188328735
+Айди группы во ВК, в которой можно проверить бота: 188328735
 */
 
 require_once 'config.php';
