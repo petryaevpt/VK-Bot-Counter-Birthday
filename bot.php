@@ -32,24 +32,69 @@ switch ($data['type'])
   $user_name = $user_info['first_name'];
 
   $validate_message = conversionDate($message);
+  $percent = getPercent($mysqli, $peer_id);
 
   if (($validate_message != 0) && (chekDate($validate_message)))
   {
     messages_send($group_token, $peer_id,
     "Хорошо, понял. Теперь ты сможешь узнать процент.");
 
-    insertOrUpdate($mysqli, $peer_id, $validate_message);
-
-  } elseif ($message == 'процент')
+    insertOrUpdateBirthday($mysqli, $peer_id, $validate_message);
+  } else
     {
-      $percent = getPercent($mysqli, $peer_id);
-      messages_send($group_token, $peer_id, "{$percent}");
-      
-    } else
-      {
-         messages_send($group_token, $peer_id,
-         "{$user_name}, напиши, когда у тебя был ПОСЛЕДИЙ день рождения в формате ДД.ММ.ГГГГ. Если уже написал дату, пиши «Процент».");
+      switch ($message) {
+
+        case 'инфо':
+          messages_send($group_token, $peer_id,
+          "Привет, {$user_name}, меня зовут @#$%. Я могу посчитать прогресс года с Дня рождения.
+          Если ещё не успел, напиши Последний день рождения в формате ДД.ММ.ГГГГ.
+          После этого можешь написать «Процент».
+          Также ты можешь попросить меня уведомлять тебя о повышении процента, написав «Прогресс»");
+        break;
+
+        case 'процент':
+
+          if (is_numeric($percent))
+          {
+            messages_send($group_token, $peer_id,
+            "Ого, с твоего дня рождения прошло уже {$percent}%!");
+          } else
+            messages_send($group_token, $peer_id, "{$percent}");
+        break;
+
+        case 'прогресс':
+          if (is_numeric($percent) && !checkPermission($mysqli, $peer_id))
+          {
+            messages_send($group_token, $peer_id,
+            "Уговорил, буду напоминать тебе о каждом повышении процента, мне не сложно! Для отключения функции напиши «Хватит».");
+
+            upPermission($mysqli, $peer_id);
+
+          } elseif (is_numeric($percent) && checkPermission($mysqli, $peer_id))
+            {
+              messages_send($group_token, $peer_id,
+              "Хей, мы же уже договорились, я буду напоминать тебе повышении процента. Для отключения функции напиши «Хватит».");
+            } else
+              messages_send($group_token, $peer_id, "{$percent}");
+        break;
+
+        case 'хватит':
+          if (is_numeric($percent) && checkPermission($mysqli, $peer_id))
+          {
+            messages_send($group_token, $peer_id,
+            "Эх, ладно, хоть отдохну:)");
+
+            downPermission($mysqli, $peer_id);
+          } else
+            messages_send($group_token, $peer_id, "Что, прости?");
+        break;
+
+        default:
+          messages_send($group_token, $peer_id,
+          "{$user_name}, если не знаешь, что сказать, пиши «Инфо».");
+        break;
       }
+    }
 
     echo('ok');
   break;

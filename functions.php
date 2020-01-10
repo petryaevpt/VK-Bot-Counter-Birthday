@@ -71,11 +71,11 @@ function getPercent($mysqli, $user_id)
       $percent_raw = $diff_days/$days_in_year;
       $percent = round($percent_raw * 100);
 
-      return sprintf("Ого, с твоего Дня рождения прошло %d%% года.", $percent);
+      return $percent;
     }
   } else
     {
-      return 'Сначала напиши дату в формате ДД.ММ.ГГГГ.';
+      return 'Сначала пришли мне дату последнего дня рождения в формате ДД.ММ.ГГГГ';
     }
 }
 
@@ -99,7 +99,7 @@ function chekDate($bdate)
 }
 
 //Заполнение базы данных
-function insertOrUpdate($mysqli, $user_id, $message)
+function insertOrUpdateBirthday($mysqli, $user_id, $message)
 {
   $select = "SELECT birthday_date FROM users_bday WHERE users_id = '{$user_id}';";
   $result = $mysqli->query($select);
@@ -116,7 +116,7 @@ function insertOrUpdate($mysqli, $user_id, $message)
     }
 }
 
-//Проверка введённой пользователем даты и приведение её к необходимому для БД формату 
+//Проверка введённой пользователем даты и приведение её к необходимому для БД формату
 function conversionDate($message)
 {
   if (strlen($message) != 10)
@@ -150,4 +150,53 @@ function conversionDate($message)
   }
 
   return $date;
+}
+
+//Проверка разрешения на рассылку 
+function checkPermission($mysqli, $user_id)
+{
+  $select = "SELECT permission FROM users_bday WHERE users_id = '{$user_id}';";
+  $result = $mysqli->query($select);
+
+  while ($row = $result->fetch_assoc())
+  {
+    if($row['permission'] == 0)
+    {
+      return 0;
+    }
+
+  return 1;
+  }
+}
+
+//Получение разрешения на рассылку
+function upPermission($mysqli, $user_id)
+{
+  $select = "SELECT permission FROM users_bday WHERE users_id = '{$user_id}';";
+  $result = $mysqli->query($select);
+
+  while ($row = $result->fetch_assoc())
+  {
+    if($row['permission'] == 0)
+    {
+      $update = "UPDATE users_bday SET permission='1' WHERE users_id = {$user_id};";
+      $mysqli->query($update);
+    }
+  }
+}
+
+//Отказ от рассылки
+function downPermission($mysqli, $user_id)
+{
+  $select = "SELECT permission FROM users_bday WHERE users_id = '{$user_id}';";
+  $result = $mysqli->query($select);
+
+  while ($row = $result->fetch_assoc())
+  {
+    if($row['permission'] == 1)
+    {
+      $update = "UPDATE users_bday SET permission='0' WHERE users_id = {$user_id};";
+      $mysqli->query($update);
+    }
+  }
 }
