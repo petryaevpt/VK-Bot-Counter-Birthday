@@ -26,8 +26,8 @@
 
       if (is_numeric($percent) && updatePercent($mysqli, $peer_id, $percent))
       {
-        $message = "{$user_name}, смотри-ка! Ты стал ещё на процент года ближе к Дню Рождения!
-        С последнего прошло уже {$percent}%!";
+        $message = "{$user_name}, смотри-ка!
+        С последнего дня рождения прошло уже {$percent}%!";
         $result = messages_send($group_token, $peer_id, $message);
       }
     }
