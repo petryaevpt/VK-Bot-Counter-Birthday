@@ -83,7 +83,7 @@ function getPercent($mysqli, $user_id)
     }
   } else
     {
-      return 'Сначала пришли мне дату последнего дня рождения в формате ДД.ММ.ГГГГ';
+      return 'Сначала пришли мне день своего рождения в формате ДД.ММ.ГГГГ';
     }
 }
 
@@ -107,21 +107,27 @@ function updatePercent($mysqli, $user_id, $percent)
   }
 }
 
-//Проверка на дату: должна быть не раньше, чем год назад + не позже, чем сегодня
-function chekDate($bdate)
+//Возвращает либо возраст пользователя, либо 0, если ДР отличается на год от актуальной даты 
+function checkBDate($bdate)
 {
   $days_in_year = date('L') ? 366 : 365;
+
   $datetime = new DateTime();
-  $d = new DateTime($bdate);
-  $diff = $d->diff($datetime);
+  $birthday = new DateTime($bdate);
+  $diff_first = $birthday->diff($datetime);
 
-  $date_unix = strtotime(date('Y-m-d'));
-  $bdate_unix = strtotime($bdate);
+  $diff_all_days = $diff_first->days;
+  $age = round($diff_all_days / 365);
 
-  $diff_days = $diff->days;
-  if (($diff_days < $days_in_year) && ($bdate_unix < $date_unix))
+  $age_for_modify = '+' . $age . 'years';
+  $last_birthday = $birthday->modify($age_for_modify); //Последний день рождения пользователя
+
+  $diff_second = $last_birthday->diff($datetime);
+  $diff_days = $diff_second->days;
+
+  if (($diff_days < $days_in_year))
   {
-    return 1;
+    return $age;
   }
     return 0;
 }
@@ -145,7 +151,7 @@ function insertOrUpdateBirthday($mysqli, $user_id, $message)
 }
 
 //Проверка введённой пользователем даты и приведение её к необходимому для БД формату
-function conversionDate($message)
+function ConversionDate($message)
 {
   if (strlen($message) != 10)
   {
@@ -176,6 +182,16 @@ function conversionDate($message)
   {
     return 0;
   }
+
+  $check_date = checkBDate($date);
+
+  if ($check_date == 0 || $check_date > 100)
+  {
+    return 0;
+  }
+
+  $year += $check_date;
+  $date = $year . '-' . $month . '-' . $day;
 
   return $date;
 }
