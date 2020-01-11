@@ -2,6 +2,14 @@
 ini_set("display_errors", 1);
 error_reporting(E_ALL);
 
+//Удобно печает массив
+function dd($value)
+{
+  echo '<pre>';
+  print_r($value);
+  echo '</pre>';
+}
+
 //Отправляет сообщение
 function messages_send($group_token, $peer_id, $message)
 {
@@ -79,6 +87,26 @@ function getPercent($mysqli, $user_id)
     }
 }
 
+/*Cron проверяет процент и обновляет, его, если фактический привысил тот,
+что находится в базе данных.
+Таким образом обеспечивается отправка напоминаний раз в процент
+*/
+function updatePercent($mysqli, $user_id, $percent)
+{
+  $sql = "SELECT progress FROM users_bday WHERE users_id = '{$user_id}';";
+  $result = $mysqli->query($sql);
+
+  while ($row = $result->fetch_assoc())
+  {
+    if ($row['progress'] != $percent)
+    {
+      $update = "UPDATE users_bday SET progress='{$percent}' WHERE users_id = {$user_id};";
+      $mysqli->query($update);
+      return 1;
+    }
+  }
+}
+
 //Проверка на дату: должна быть не раньше, чем год назад + не позже, чем сегодня
 function chekDate($bdate)
 {
@@ -101,7 +129,7 @@ function chekDate($bdate)
 //Заполнение базы данных
 function insertOrUpdateBirthday($mysqli, $user_id, $message)
 {
-  $select = "SELECT birthday_date FROM users_bday WHERE users_id = '{$user_id}';";
+  $select = "SELECT birthday_date, progress FROM users_bday WHERE users_id = '{$user_id}';";
   $result = $mysqli->query($select);
 
   //Если есть поле с таким $user_id, перезаписываем дату, иначе создаём поле
@@ -152,20 +180,23 @@ function conversionDate($message)
   return $date;
 }
 
-//Проверка разрешения на рассылку 
+//Проверка разрешения на рассылку
 function checkPermission($mysqli, $user_id)
 {
   $select = "SELECT permission FROM users_bday WHERE users_id = '{$user_id}';";
   $result = $mysqli->query($select);
 
-  while ($row = $result->fetch_assoc())
+  if($result->num_rows != 0)
   {
-    if($row['permission'] == 0)
+    while ($row = $result->fetch_assoc())
     {
-      return 0;
-    }
+      if($row['permission'] == 0)
+      {
+        return 0;
+      }
 
-  return 1;
+    return 1;
+    }
   }
 }
 
@@ -199,4 +230,20 @@ function downPermission($mysqli, $user_id)
       $mysqli->query($update);
     }
   }
+}
+
+//Возвращает массив id всех пользователей, разрешивших рассылку
+function getUsersIdForCron($mysqli)
+{
+  $select = "SELECT permission, users_id FROM users_bday;";
+  $result = $mysqli->query($select);
+
+  while ($row = $result->fetch_assoc())
+  {
+    $array [] = array_values($row); //возвращает массив со всеми элементами массива $row
+  }
+
+  $peer_id = array_column($array, 1); // возвращает массив из значений массива $array с ключом 1
+
+  return $peer_id;
 }

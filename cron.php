@@ -1,13 +1,9 @@
 <?php
   ini_set("display_errors",1);
   error_reporting(E_ALL);
-
   /*
-
   Выключен!
-
   */
-
   require_once 'config.php';
   require_once 'functions.php';
 
@@ -17,19 +13,24 @@
     die("Connection failed: " . $mysqli->connect_error);
   }
 
-  $peer_id = $data['object']['peer_id'] ?: $data['object']['user_id'];
+  $users_id = getUsersIdForCron($mysqli);
 
-  $user_info = users_get($access_token, $peer_id)[0];
-  $user_name = $user_info['first_name'];
+  foreach ($users_id as $peer_id)
+  {
+    if (checkPermission($mysqli, $peer_id))
+    {
+      $user_info = users_get($access_token, $peer_id)[0];
 
-  $percent = getPercent($mysqli, $peer_id);
+      $user_name = $user_info['first_name'];
+      $percent = getPercent($mysqli, $peer_id);
 
-  $message = "{$user_name}, смотри-ка! Ты стал ещё на процент года ближе к Дню Рождения!
-  С последнего прошло уже {$percent}%!";
-
-  //$result = messages_send($group_token, $peer_id, $message);
-
-  print_r($result);
-	echo PHP_EOL;
+      if (is_numeric($percent) && updatePercent($mysqli, $peer_id, $percent))
+      {
+        $message = "{$user_name}, смотри-ка! Ты стал ещё на процент года ближе к Дню Рождения!
+        С последнего прошло уже {$percent}%!";
+        $result = messages_send($group_token, $peer_id, $message);
+      }
+    }
+  }
 
   $mysqli->close();
