@@ -1,9 +1,7 @@
 <?php
   ini_set("display_errors",1);
   error_reporting(E_ALL);
-  /*
-  Выключен!
-  */
+
   require_once 'config.php';
   require_once 'functions.php';
 
@@ -27,7 +25,7 @@
       if (is_numeric($percent) && updatePercent($mysqli, $peer_id, $percent))
       {
         $message = "{$user_name}, смотри-ка!
-        С последнего дня рождения прошло уже {$percent}%!";
+        С последнего дня рождения прошло уже {$percent}% года!";
         $result = messages_send($group_token, $peer_id, $message);
       }
     }

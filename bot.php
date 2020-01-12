@@ -57,7 +57,7 @@ switch ($data['type'])
           if (is_numeric($percent))
           {
             messages_send($group_token, $peer_id,
-            "Ого, с твоего дня рождения прошло уже {$percent}%!");
+            "Ого, с твоего дня рождения прошло уже {$percent}% года!");
           } else
             messages_send($group_token, $peer_id, "{$percent}");
         break;
@@ -68,7 +68,7 @@ switch ($data['type'])
             messages_send($group_token, $peer_id,
             "Окей, буду напоминать тебе о каждом повышении процента, мне не сложно! Для отключения функции напиши «Хватит».");
 
-            upPermission($mysqli, $peer_id);
+            updatePermission($mysqli, $peer_id);
 
           } elseif (is_numeric($percent) && checkPermission($mysqli, $peer_id))
             {
@@ -84,7 +84,7 @@ switch ($data['type'])
             messages_send($group_token, $peer_id,
             "Эх, ладно, хоть отдохну:)");
 
-            downPermission($mysqli, $peer_id);
+            updatePermission($mysqli, $peer_id);
           } else
             messages_send($group_token, $peer_id, "Что, прости?");
         break;

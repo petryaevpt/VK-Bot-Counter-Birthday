@@ -117,7 +117,7 @@ function checkBDate($bdate)
   $diff_first = $birthday->diff($datetime);
 
   $diff_all_days = $diff_first->days;
-  $age = round($diff_all_days / 365);
+  $age = floor($diff_all_days / 365);
 
   $age_for_modify = '+' . $age . 'years';
   $last_birthday = $birthday->modify($age_for_modify); //Последний день рождения пользователя
@@ -151,16 +151,16 @@ function insertOrUpdateBirthday($mysqli, $user_id, $message)
 }
 
 //Проверка введённой пользователем даты и приведение её к необходимому для БД формату
-function ConversionDate($message)
+function ConversionDate($message) //30.03.1999, 29.11.1999
 {
   if (strlen($message) != 10)
   {
     return 0;
   }
 
-  $day = mb_substr($message, 0, 2, 'utf-8');
-  $month = mb_substr($message, 3, 2, 'utf-8');
-  $year = mb_substr($message, 6, 4, 'utf-8');
+  $day = mb_substr($message, 0, 2, 'utf-8'); //30, 29
+  $month = mb_substr($message, 3, 2, 'utf-8'); //03, 11
+  $year = mb_substr($message, 6, 4, 'utf-8'); //1999, 1999
   $checkdate = $year . $month . $day;
 
   if(!ctype_digit($checkdate))
@@ -173,7 +173,7 @@ function ConversionDate($message)
     $day = 28;
   }
 
-  $date = $year . '-' . $month . '-' . $day;
+  $date = $year . '-' . $month . '-' . $day; //1999-03-30, 1999-11-29
 
   $format = 'Y-m-d';
   $datetime = DateTime::createFromFormat($format, $date);
@@ -183,7 +183,7 @@ function ConversionDate($message)
     return 0;
   }
 
-  $check_date = checkBDate($date);
+  $check_date = checkBDate($date); 
 
   if ($check_date == 0 || $check_date > 100)
   {
@@ -211,13 +211,13 @@ function checkPermission($mysqli, $user_id)
         return 0;
       }
 
-    return 1;
+      return 1;
     }
   }
 }
 
-//Получение разрешения на рассылку
-function upPermission($mysqli, $user_id)
+//Соглашение на рассылку или отказ от неё
+function updatePermission($mysqli, $user_id)
 {
   $select = "SELECT permission FROM users_bday WHERE users_id = '{$user_id}';";
   $result = $mysqli->query($select);
@@ -228,23 +228,11 @@ function upPermission($mysqli, $user_id)
     {
       $update = "UPDATE users_bday SET permission='1' WHERE users_id = {$user_id};";
       $mysqli->query($update);
-    }
-  }
-}
-
-//Отказ от рассылки
-function downPermission($mysqli, $user_id)
-{
-  $select = "SELECT permission FROM users_bday WHERE users_id = '{$user_id}';";
-  $result = $mysqli->query($select);
-
-  while ($row = $result->fetch_assoc())
-  {
-    if($row['permission'] == 1)
-    {
-      $update = "UPDATE users_bday SET permission='0' WHERE users_id = {$user_id};";
-      $mysqli->query($update);
-    }
+    } else
+      {
+        $update = "UPDATE users_bday SET permission='0' WHERE users_id = {$user_id};";
+        $mysqli->query($update);
+      }
   }
 }
 
