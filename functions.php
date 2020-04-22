@@ -23,7 +23,6 @@ function users_get($group_token, $user_id)
 {
   return api($group_token, 'users.get', array(
     'user_ids' => $user_id,
-    'fields' => 'bdate',
     ));
 }
 
@@ -72,6 +71,10 @@ function getPercent($mysqli, $user_id)
 
       $percent_raw = $diff_days/$days_in_year;
       $percent = round($percent_raw * 100);
+
+      if ($percent >= 100) {
+        $percent -= 100;
+      }
 
       return $percent;
     }

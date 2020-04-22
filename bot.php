@@ -1,5 +1,8 @@
 <?php
 
+ini_set("display_errors",1);
+error_reporting(E_ALL);
+
 require_once 'config.php';
 require_once 'functions.php';
 
@@ -20,7 +23,7 @@ switch ($data['type']) {
   $message = mb_strtolower($message);
   $peer_id = $data['object']['peer_id'] ?: $data['object']['user_id'];
 
-  $user_info = users_get($access_token, $peer_id)[0];
+  $user_info = users_get($group_token, $peer_id)[0];
   $user_name = $user_info['first_name'];
 
   $validate_message = conversionDate($message);

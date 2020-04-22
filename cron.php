@@ -1,4 +1,5 @@
 <?php
+
   require_once 'config.php';
   require_once 'functions.php';
 
@@ -11,7 +12,7 @@
 
   foreach ($users_id as $peer_id) {
     if (checkPermission($mysqli, $peer_id)) {
-      $user_info = users_get($access_token, $peer_id)[0];
+      $user_info = users_get($group_token, $peer_id)[0];
       $user_name = $user_info['first_name'];
 
       $percent = getPercent($mysqli, $peer_id);
